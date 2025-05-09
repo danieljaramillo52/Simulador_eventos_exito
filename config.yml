@@ -1,0 +1,54 @@
+
+# Configuraciones de usuario. 
+df_insumo:
+  dict_cols : {
+    "Mes": "Mes",
+    "Herramienta": "Herramienta",
+    "Concepto": "Concepto",
+    "Vigencia": "Vigencia",
+    "Dias de la actividad": "Dias de la actividad",
+    "Fecha entrega Proveedores": "Fecha entrega Proveedores",
+    "Fecha entrega Planificacion": "Fecha entrega Planificacion",
+    "# ofertas": "# ofertas",
+    "plu": "plu",
+    "producto": "producto",
+    "Marca": "Marca",
+    "Sub": "Sub",
+    "Venta $$ Promedio Mes": "Venta $$ Promedio Mes",
+    "Promedio Mes Und": "Promedio Mes Und",
+    "Precio de venta": "Precio de venta",
+  }
+
+lateral_var:
+  encabezado: "Menu"
+  enczdo_rang_dcto : "Seleccione un rango de descuento..."
+  rango_descuento:
+    - "5% - 10%"
+    - "10% - 15%"
+    - "15% - 20%"
+    - "20% - 25%"
+    - "25% - 30%"
+    - "30% - 35%"
+    - "35% - 40%"
+    - "40% - 45%"
+    - "45% - 50%"
+
+
+
+url_app_apscritp: https://script.google.com/macros/s/AKfycbxrLMi97hhKLNp6aL0a6fumxo6TvZvXX58bX1WaSSesF5aoKcfdMOUnCSHa7wGE62ApMQ/exec
+
+textos:
+  titulo_principal: "Interfaz Interactiva con Múltiples Selecciones"
+  subtitulo: "Selección de Materiales y Porcentajes"
+  agregar_fila: "Agregar nueva fila"
+  seleccionar_materiales: "Seleccionar Materiales"
+  seleccionar_meses: "Seleccionar Meses"
+  construir_tabla: "Construir tabla"
+  seleccion_material_placeholder: "Selecciona un material:"
+  seleccion_mes_placeholder: "Selecciona un mes:"
+  mensaje_exito: "¡Perfecto, los materiales suman el "
+  mensaje_advertencia: "Ajusta los valores. Los materiales aún no suman el "
+  mensaje_error: "Ajusta los valores. Los materiales no pueden sumar más del " 
+
+
+

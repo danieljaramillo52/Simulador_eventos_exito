@@ -1,0 +1,129 @@
+/* styles.css */
+body {
+    background: #f5faf3 !important;
+    font-family: 'Inter', system-ui, sans-serif !important;
+}
+
+/* 💎 Barra lateral con tonos verdes elegantes */
+[data-testid="stSidebar"] {
+    background: linear-gradient(155deg, #dff2e1 0%, #b2e6b5 100%) !important;
+    border-right: 3px solid #1c3a27 !important;
+    border-radius: 7px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+    margin-bottom: -1px !important;
+    padding: 0 !important;
+}
+
+/* ✨ Nuevo ícono de cierre con estilo */
+.css-1oe5cao {
+    color: #206a44 !important;
+    font-size: 1.8em !important;
+    transform: scale(1.3);
+    transition: all 0.3s ease !important;
+}
+
+.css-1oe5cao:hover {
+    color: #0f4a2a !important;
+    transform: scale(1.4);
+}
+
+/* 🖍️ Bordes internos resaltados en selectores y tablas */
+.stSelectbox, .stDataFrame, [data-testid="stTextInput"] {
+    border: 2px solid #206a44 !important;
+    border-radius: 6px !important;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.15) !important;
+    padding: 5px !important;
+}
+
+/* 🌟 Destacar las celdas internas con un sutil borde dorado */
+.stDataFrame td, .stTable td {
+    border: 1px solid #0a0a09 !important;
+}
+
+/* 🎨 Nueva paleta de colores: Verde y Dorado */
+.stMarkdown th {
+    background: linear-gradient(135deg, #2f7d57 0%, #206a44 100%) !important;
+    color: white !important;
+    border-bottom: 2px solid #144a31 !important;
+}
+
+.stMarkdown td {
+    border-color: #e3f2e6 !important;
+    color: #2d4d3a !important;
+}
+
+/* 🔥 Botones con un toque dorado elegante */
+.stButton > button {
+    background: linear-gradient(135deg, #cad417 0%, #95b80b 100%) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 5px !important;
+    padding: 10px 25px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 2px 6px rgba(177, 212, 23, 0.3) !important;
+    font-weight: bold !important;
+}
+
+.stButton > button:hover {
+    background: #9bb80b !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(181, 196, 40, 0.4) !important;
+}
+
+
+/* ✨ Efecto hover en tablas */
+.stMarkdown tr:hover td {
+    background: #e0ffd1 !important;
+}
+
+/* 🖼️ Marco moderno con fondo translúcido */
+.stApp > div:not([data-testid="stSidebar"]) {
+    background: rgba(223, 249, 234, 0.9) !important;
+    backdrop-filter: blur(10px) !important;
+    border-radius: 15px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+    margin: 1.5rem !important;
+    padding: 2rem !important;
+}
+
+/* 📌 Títulos con un estilo más estilizado */
+h1 {
+    color: #0f4a2a !important;
+    border-left: 4px solid #dfd920 !important;
+    padding-left: 1rem !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+    text-transform: none !important;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+/* ✅ Nuevos ajustes de espaciado (agregados al final) */
+.stApp > div[data-testid="stVerticalBlock"] > div:first-child {
+    padding-top: 0.5rem !important;
+}
+
+.stContainer {
+    margin-top: -3rem !important;
+    padding: 1 !important;
+}
+
+[data-testid="stVerticalBlock"] {
+    gap: 1.5rem !important;
+}
+
+.stHeadingContainer {
+    margin: -10px !important;
+}
+
+hr {
+    margin: 0.3rem 0 !important;
+    border-color: #206a44 !important;
+}
+
+h1, h2, h3 {
+    margin: -0.8rem 0 -0.5rem 0 !important;
+}
+
+.stMarkdown {
+    margin: -0.5rem 0 !important;
+}
