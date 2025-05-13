@@ -7,6 +7,7 @@ from typing import List
 import yaml
 import requests
 from io import BytesIO
+import re
 
 
 def procesar_configuracion(nom_archivo_configuracion: str) -> dict:
@@ -441,6 +442,28 @@ def calcular_venta(df, dict_cols):
     return df
 
 
+def obtener_rango_valido_desde_texto(
+    texto: str, por_defecto: tuple[int, int] = (5, 10)
+) -> tuple[int, int]:
+    """
+    Extrae un rango de dos números enteros desde un texto. Si no se encuentran dos números, retorna un rango por defecto.
+
+    Args:
+        texto (str): Texto que contiene números, por ejemplo "5% - 10%".
+        por_defecto (tuple[int, int]): Rango de retorno si falla la extracción.
+
+    Returns:
+        tuple[int, int]: Rango de dos valores enteros.
+    """
+    try:
+        numeros = tuple(map(int, re.findall(r"\d+", texto)))
+        if len(numeros) < 2:
+            return por_defecto
+        return numeros
+    except Exception:
+        return por_defecto
+
+
 def preparar_df_materiales(lista_materiales):
     """
     Convierte y normaliza la lista de materiales a DataFrame.
@@ -455,9 +478,7 @@ def preparar_df_materiales(lista_materiales):
     df_mat = pd.DataFrame(lista_materiales).rename(
         columns={"material": "concat_plu_producto"}
     )
-    df_mat["rango"] = (
-        df_mat["rango"].astype(int) / 100
-    )
+    df_mat["rango"] = df_mat["rango"].astype(int) / 100
     return df_mat
 
 
@@ -490,7 +511,6 @@ def calcular_descuento(df):
         pd.Series: Columna con valores del costo del descuento.
     """
     return df["Venta de la actividad"] * df["rango"]
-
 
 
 def procesar_insumo(df_insumo, porcentaje_crecimiento, lista_materiales, dict_cols):

@@ -52,3 +52,19 @@ textos:
 
 
 
+
+
+
+mes_actual: Febrero
+concepto: 
+  Concurso regional de logros:
+    primer_lugar: Concurso regional de logros {mes_actual} cumple piso 60 logros 1er lugar.
+    segundo_lugar: Concurso regional de logros {mes_actual} cumple piso 60 logros 2do lugar.
+    resto: Concurso regional de logros {mes_actual} cumple piso 60 logros.
+    primer_lugar_especial: Concurso regional de logros {mes_actual} frente comercial
+    segundo_lugar_especial: Concurso regional de logros {mes_actual} frente comercial
+  Gestión inventario. :
+    resto : Gestión inventario {mes_actual} 
+  IGPT:
+    resto : IGPT {mes_actual} 
+  

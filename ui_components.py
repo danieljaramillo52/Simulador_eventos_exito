@@ -156,6 +156,95 @@ class TextInputManager:
         st.session_state[f"{self.clave}_reset"] = True
 
 
+class MultiVisibilityController:
+    """
+    Controlador de visibilidad para múltiples componentes en Streamlit.
+
+    Esta clase permite gestionar de forma centralizada la visibilidad de varios elementos
+    de la interfaz (como inputs, selectboxes, sliders, etc.) usando claves en `st.session_state`.
+
+    Attributes:
+        claves (list[str]): Lista de claves de visibilidad asociadas a cada componente.
+
+    Methods:
+        mostrar(): Establece todas las claves como visibles (`True`).
+        ocultar(): Establece todas las claves como no visibles (`False`).
+        esta_visible() -> bool: Retorna `True` si todos los elementos están visibles.
+        mostrar_clave(clave: str): Establece como visible un componente específico.
+        ocultar_clave(clave: str): Establece como no visible un componente específico.
+        esta_visible_clave(clave: str) -> bool: Verifica si un componente está visible.
+    """
+
+    def __init__(self, claves: list[str], visibles_por_defecto: bool = True):
+        """
+        Inicializa el controlador, estableciendo el estado inicial de visibilidad
+        para cada clave proporcionada.
+
+        Args:
+            claves (list[str]): Lista de claves para controlar la visibilidad.
+            visibles_por_defecto (bool): Estado inicial de visibilidad (True = mostrar).
+        """
+        self.claves = claves
+        self.claves = [f"{clave}_visible" for clave in claves]
+        for clave in self.claves:
+            if clave not in st.session_state:
+                st.session_state[clave] = visibles_por_defecto
+
+    def mostrar(self):
+        """Muestra todos los componentes controlados (establece todas las claves como True)."""
+        for clave in self.claves:
+            st.session_state[clave] = True
+
+    def ocultar(self):
+        """Oculta todos los componentes controlados (establece todas las claves como False)."""
+        for clave in self.claves:
+            st.session_state[clave] = False
+
+    def esta_visible(self) -> bool:
+        """
+        Verifica si todos los elementos controlados están actualmente visibles.
+
+        Returns:
+            bool: True si todas las claves están en estado `True`, False en caso contrario.
+        """
+        return all(st.session_state[clave] for clave in self.claves)
+
+    def mostrar_clave(self, clave: str):
+        """
+        Muestra un componente específico controlado por su clave.
+
+        Args:
+            clave (str): Clave del componente a mostrar.
+        """
+        vis_key = f"{clave}_visible"
+        if vis_key in self.claves:
+            st.session_state[vis_key] = True
+
+    def ocultar_clave(self, clave: str):
+        """
+        Oculta un componente específico controlado por su clave.
+
+        Args:
+            clave (str): Clave del componente a ocultar.
+        """
+        vis_key = f"{clave}_visible"
+        if vis_key in self.claves:
+            st.session_state[vis_key] = False
+
+    def esta_visible_clave(self, clave: str) -> bool:
+        """
+        Verifica si un componente específico está visible.
+
+        Args:
+            clave (str): Clave del componente a verificar.
+
+        Returns:
+            bool: True si la clave está en `True`, False en caso contrario.
+        """
+        vis_key = f"{clave}_visible"
+        return st.session_state.get(vis_key, False)
+    
+
 class FileUploaderManager:
     """
     Maneja un cargador de archivos personalizado usando st_file_uploader,
@@ -327,7 +416,7 @@ class SelectBoxManager:
         # Guarda internamente el valor actual
         self.clave_actual_menu = st.session_state[self.clave]
 
-    def get(self) -> str:
+    def get_value(self) -> str:
         """Devuelve la opción actualmente seleccionada."""
         return st.session_state.get(self.clave, self.clave_actual_menu)
 
@@ -513,7 +602,6 @@ class SelectorFechasEvento:
         self.dias = 0
         self.mes = ""
         self.es_valido = False
-        self.confirmado = False
 
     def mostrar_controles(self):
         """
@@ -542,19 +630,6 @@ class SelectorFechasEvento:
         st.success(f"✅ Fechas válidas. El rango es de {self.dias} días.")
         st.info(f"📆 El mes de la fecha de inicio es: **{self.mes}**")
 
-    def confirmar(self, boton: "ButtonTracker"):
-        """
-        Procesa la confirmación del botón si el rango de fechas es válido.
-        Guarda los resultados en session_state si se confirma.
-
-        Args:
-            boton (ButtonTracker): Instancia del botón a utilizar para la confirmación.
-        """
-        if self.es_valido and boton.fue_presionado():
-            self.confirmado = True
-            self._guardar_en_session_state()
-            st.success("🟢 Fechas confirmadas exitosamente.")
-
     def obtener_resultado(self):
         """
         Devuelve los datos de las fechas si han sido confirmadas.
@@ -562,14 +637,12 @@ class SelectorFechasEvento:
         Returns:
             dict | None: Diccionario con fecha_inicio, fecha_fin, dias y mes si confirmado; None en caso contrario.
         """
-        if self.confirmado:
-            return {
+        return {
                 "fecha_inicio": self.fecha_inicio,
                 "fecha_fin": self.fecha_fin,
                 "dias": self.dias,
                 "mes": self.mes,
             }
-        return None
 
     def _guardar_en_session_state(self):
         """
