@@ -23,6 +23,8 @@ class ConfigLoader:
         # Cargar valores de config en atributos
         self.cnf_lateral_var = self.config["lateral_var"]
         self.dict_cols = self.config["df_insumo"]["dict_cols"]
+        self.cols_df_insumo = self.config["df_insumo"]["cols_select"]
+        self.cnf_session_stt = self.config["config_session_state"]["claves_a_conservar"]
         self.textos = self.config["textos"]  # Cargar textos
 
 

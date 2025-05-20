@@ -7,6 +7,7 @@ from typing import List
 import yaml
 import requests
 from io import BytesIO
+from datetime import date
 import re
 
 
@@ -464,39 +465,33 @@ def obtener_rango_valido_desde_texto(
         return por_defecto
 
 
-def preparar_df_materiales(lista_materiales):
+def preparar_df_materiales(df):
     """
     Convierte y normaliza la lista de materiales a DataFrame.
 
     Args:
-        lista_materiales (list[dict]): Lista de materiales.
+        df_materiales: Lista de materiales.
         dict_cols (dict): Diccionario de columnas relevantes.
 
     Returns:
         pd.DataFrame: DataFrame con columna 'rango' normalizada.
     """
-    df_mat = pd.DataFrame(lista_materiales).rename(
-        columns={"material": "concat_plu_producto"}
-    )
-    df_mat["rango"] = df_mat["rango"].astype(int) / 100
-    return df_mat
+    df["rango"] = df["rango"].astype(int) / 100
+    return df
 
 
-def unir_y_filtrar_materiales(df, df_mat, dict_cols):
-    """
-    Realiza merge entre insumos y materiales, eliminando valores sin rango.
+def calcular_promedios(df: pd.DataFrame, cols: list[str]):
+    """Calcula un promedio simple sobre varias columnas de un dataframe
 
     Args:
-        df (pd.DataFrame): DataFrame de insumos.
-        df_mat (pd.DataFrame): DataFrame de materiales normalizado.
-        dict_cols (dict): Diccionario de columnas relevantes.
+        df: type (pd.Dataframe). Dataframe sobre le que se calculan los promedios.
+        cols: type (list[str]). Columnas necesarias.
 
-    Returns:
-        pd.DataFrame: DataFrame combinado y filtrado.
-    """
-    return pd.merge(df, df_mat, on=["concat_plu_producto"], how="left").dropna(
-        subset=["rango"]
-    )
+    Return:
+        serie_prom: type (pd.Series). Serie con los promedios calculados."""
+
+    promedios = df[cols].mean().round(2)
+    return promedios
 
 
 def calcular_descuento(df):
@@ -513,14 +508,13 @@ def calcular_descuento(df):
     return df["Venta de la actividad"] * df["rango"]
 
 
-def procesar_insumo(df_insumo, porcentaje_crecimiento, lista_materiales, dict_cols):
+def procesar_insumo(df_insumo, porcentaje_crecimiento, dict_cols):
     """
     Ejecuta todo el flujo de procesamiento de insumos con crecimiento y descuentos.
 
     Args:
         df_insumo (pd.DataFrame): DataFrame de insumos original.
         porcentaje_crecimiento (float): Porcentaje de crecimiento para unidades.
-        lista_materiales (list[dict]): Lista con materiales y rangos de descuento.
         dict_cols (dict): Dict de columnas necesarias.
 
     Returns:
@@ -530,10 +524,31 @@ def procesar_insumo(df_insumo, porcentaje_crecimiento, lista_materiales, dict_co
     df = calcular_unidades(df, dict_cols)
     df = calcular_totales(df, porcentaje_crecimiento)
     df = calcular_venta(df, dict_cols)
-    df_mat = preparar_df_materiales(lista_materiales)
-    df = unir_y_filtrar_materiales(df, df_mat, dict_cols)
+    df = preparar_df_materiales(df)
     df["Costo del descuento"] = calcular_descuento(df)
     return df
+
+
+def aplanar_diccionario(diccionario: dict, clave_aplanar: str = "Fecha") -> dict:
+    """
+    Aplana un diccionario anidado moviendo las claves de un subdiccionario especificado al nivel superior.
+
+    Parámetros:
+        diccionario (dict): Diccionario original con posible anidación
+        clave_aplanar (str): Clave del subdiccionario a aplanar (default: "Fecha")
+
+    Retorno:
+        dict: Diccionario aplanado con todas las claves al nivel superior
+
+    Ejemplo:
+        >>> dict_original = {"a": 1, "Fecha": {"mes": "Enero", "año": 2023}}
+        >>> aplanar_diccionario(dict_original)
+        {"a": 1, "mes": "Enero", "año": 2023}
+    """
+    return {
+        **{k: v for k, v in diccionario.items() if k != clave_aplanar},
+        **diccionario.get(clave_aplanar, {}),
+    }
 
 
 def reemplazar_columna_en_funcion_de_otra(
@@ -609,3 +624,22 @@ def Seleccionar_columnas_pd(
         return df
     except Exception as e:
         logger.critical(f"Error inesperado al filtrar columnas: {str(e)}")
+
+
+def formatear_fecha(fecha_dict):
+    if not isinstance(fecha_dict, dict):
+        return {}
+    return {
+        "fecha_inicio": (
+            fecha_dict.get("fecha_inicio").strftime("%Y-%m-%d")
+            if isinstance(fecha_dict.get("fecha_inicio"), date)
+            else ""
+        ),
+        "fecha_fin": (
+            fecha_dict.get("fecha_fin").strftime("%Y-%m-%d")
+            if isinstance(fecha_dict.get("fecha_fin"), date)
+            else ""
+        ),
+        "Dias de la actividad": fecha_dict.get("dias", ""),
+        "mes": fecha_dict.get("mes", ""),
+    }

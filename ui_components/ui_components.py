@@ -6,7 +6,8 @@ import pandas as pd
 from datetime import datetime
 from typing import Any, Optional, Tuple, List, Union
 
-def add_key_session_state(clave: str, valor_inicial: Any) -> None:
+
+def add_key_ss_st(clave: str, valor_inicial: Any) -> None:
     """
     Inicializa una clave en st.session_state con un valor por defecto si no existe.
 
@@ -35,7 +36,7 @@ def add_key_session_state(clave: str, valor_inicial: Any) -> None:
         st.error(f"Error al inicializar '{clave}': {e}")
 
 
-def set_key_session_state(clave: str, valor: Any) -> None:
+def set_key_ss_st(clave: str, valor: Any) -> None:
     """
     Asigna o actualiza un valor en st.session_state.
 
@@ -46,6 +47,31 @@ def set_key_session_state(clave: str, valor: Any) -> None:
     if not isinstance(clave, str):
         raise TypeError("La clave debe ser de tipo str.")
     st.session_state[clave] = valor
+
+
+def clean_key_ss_st(keys: tuple | list) -> None:
+    """
+    Elimina de forma segura múltiples claves del estado de sesión de Streamlit.
+
+    Parámetros:
+        keys (tuple|list): Iterable con los nombres de las claves a eliminar.
+
+    Ejemplo:
+        >>> clean_key_ss_st(("df_procesado", "promedios"))
+        >>> clean_key_ss_st(["datos_temp", "filtros"])
+
+    Notas:
+        - Elimina claves existentes sin lanzar errores si no existen
+        - Registra errores inesperados sin interrumpir el flujo
+    """
+    try:
+        for key in keys:
+            st.session_state.pop(key, None)
+    except TypeError as e:
+        st.error(f"Error en tipo de dato: {str(e)} - Las claves deben ser iterables")
+    except Exception as e:
+        st.error(f"Error inesperado al limpiar estado: {str(e)}")
+        raise
 
 
 class TextInputManager:
@@ -243,7 +269,7 @@ class MultiVisibilityController:
         """
         vis_key = f"{clave}_visible"
         return st.session_state.get(vis_key, False)
-    
+
 
 class FileUploaderManager:
     """
@@ -519,7 +545,11 @@ class ButtonTracker:
     """
 
     def __init__(
-        self, clave: str, etiqueta: str = "Enviar", usar_sidebar: bool = False
+        self,
+        clave: str,
+        etiqueta: str = "Enviar",
+        usar_sidebar: bool = False,
+        auto_render: bool = True,
     ):
         """
         Inicializa el botón y su estado asociado en session_state.
@@ -536,8 +566,11 @@ class ButtonTracker:
         self.clave_widget = f"{clave}_widget"  # Clave para el widget visual del botón
         self.etiqueta = etiqueta
         self.usar_sidebar = usar_sidebar
+        self.auto_render = auto_render
         self._inicializar_estado()
-        self._renderizar_boton()
+
+        if self.auto_render:
+            self._mostrar_boton()
 
     def _inicializar_estado(self):
         """
@@ -548,7 +581,7 @@ class ButtonTracker:
         if self.clave_estado not in st.session_state:
             st.session_state[self.clave_estado] = False
 
-    def _renderizar_boton(self):
+    def _mostrar_boton(self):
         """
         Renderiza el botón en la ubicación especificada.
 
@@ -627,9 +660,6 @@ class SelectorFechasEvento:
         self.mes = self.fecha_inicio.strftime("%B").capitalize()
         self.es_valido = True
 
-        st.success(f"✅ Fechas válidas. El rango es de {self.dias} días.")
-        st.info(f"📆 El mes de la fecha de inicio es: **{self.mes}**")
-
     def obtener_resultado(self):
         """
         Devuelve los datos de las fechas si han sido confirmadas.
@@ -638,11 +668,11 @@ class SelectorFechasEvento:
             dict | None: Diccionario con fecha_inicio, fecha_fin, dias y mes si confirmado; None en caso contrario.
         """
         return {
-                "fecha_inicio": self.fecha_inicio,
-                "fecha_fin": self.fecha_fin,
-                "dias": self.dias,
-                "mes": self.mes,
-            }
+            "fecha_inicio": self.fecha_inicio,
+            "fecha_fin": self.fecha_fin,
+            "dias": self.dias,
+            "mes": self.mes,
+        }
 
     def _guardar_en_session_state(self):
         """

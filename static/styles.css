@@ -27,13 +27,13 @@ body {
     transform: scale(1.4);
 }
 
-/* 🖍️ Bordes internos resaltados en selectores y tablas */
+/* 🖍️ Bordes internos resaltados en selectores y tablas
 .stSelectbox, .stDataFrame, [data-testid="stTextInput"] {
     border: 2px solid #206a44 !important;
     border-radius: 6px !important;
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.15) !important;
     padding: 5px !important;
-}
+}*/
 
 /* 🌟 Destacar las celdas internas con un sutil borde dorado */
 .stDataFrame td, .stTable td {

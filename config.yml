@@ -3,12 +3,7 @@
 df_insumo:
   dict_cols : {
     "Mes": "Mes",
-    "Herramienta": "Herramienta",
-    "Concepto": "Concepto",
     "Vigencia": "Vigencia",
-    "Dias de la actividad": "Dias de la actividad",
-    "Fecha entrega Proveedores": "Fecha entrega Proveedores",
-    "Fecha entrega Planificacion": "Fecha entrega Planificacion",
     "# ofertas": "# ofertas",
     "plu": "plu",
     "producto": "producto",
@@ -17,21 +12,79 @@ df_insumo:
     "Venta $$ Promedio Mes": "Venta $$ Promedio Mes",
     "Promedio Mes Und": "Promedio Mes Und",
     "Precio de venta": "Precio de venta",
+    "Dias de la actividad" : "Dias de la actividad"
   }
+  cols_select:
+    - "concat_plu_producto"
+    - "plu"
+    - "producto"
+    - "Venta $$ Promedio Mes"
+    - "Promedio Mes Und"
+    - "Precio de venta"
+
 
 lateral_var:
   encabezado: "Menu"
-  enczdo_rang_dcto : "Seleccione un rango de descuento..."
-  rango_descuento:
-    - "5% - 10%"
-    - "10% - 15%"
-    - "15% - 20%"
-    - "20% - 25%"
-    - "25% - 30%"
-    - "30% - 35%"
-    - "35% - 40%"
-    - "40% - 45%"
-    - "45% - 50%"
+
+  seccion_rango_descuento:
+    select_box_rng:
+      clave: "selector_rango_dcto"
+      etiqueta : "Seleccione un rango de descuento..."
+      list_rng_dctos:
+      - "5% - 10%"
+      - "10% - 15%"
+      - "15% - 20%"
+      - "20% - 25%"
+      - "25% - 30%"
+      - "30% - 35%"
+      - "35% - 40%"
+      - "40% - 45%"
+      - "45% - 50%"
+    btn_confirmar_rng:
+      clave : btn_confirmar_rango
+      etiqueta : Confirmar rango %
+
+  seccion_crecimiento:
+    text_input_crec:
+      clave: "text_input_crecimiento"
+      etiqueta: "Ingrese % de crecimiento:"
+      valor_por_defecto: 10
+      minimo: 1
+      maximo: 50
+    btn_confirmar_rng:
+      clave : "btn_confirmar_%_crecimiento"
+      etiqueta : "Confirmar % crecimiento"
+
+  seccion_archivo:
+    file_uploader:
+      clave: "archivo_excel"
+      titulo: "Cargar archivo"
+      uploader_msg: "📤 Adjuntar archivo Excel"
+      limit_msg: "Tamaño máximo 200MB"
+      button_msg: "🗂️ Examinar"
+      tipo_archivos: ["csv", "xlsx"]
+      icon: "MdUploadFile"
+
+
+
+
+
+
+
+config_session_state:
+  claves_a_conservar:
+    - "selector_rango_dcto"
+    - "df_insumo"
+    - "text_input_crecimiento_valido"
+    - "btn_confirmar_rango_estado"
+    - "portje_cremto_act"
+    - "btn_confirmar_%_crecimiento_widget"
+    - "btn_confirmar_%_crecimiento_estado"
+    - "archivo_excel"
+    - "btn_confirmar_rango_widget"
+    - "rango_act"
+    - "text_input_crecimiento"
+    - "list_materiales"
 
 
 
@@ -49,6 +102,23 @@ textos:
   mensaje_exito: "¡Perfecto, los materiales suman el "
   mensaje_advertencia: "Ajusta los valores. Los materiales aún no suman el "
   mensaje_error: "Ajusta los valores. Los materiales no pueden sumar más del " 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

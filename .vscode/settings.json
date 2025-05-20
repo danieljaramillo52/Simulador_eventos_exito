@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": [
+        "./ui_components",
+        "./Controllers"
+    ]
+}
