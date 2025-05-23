@@ -102,9 +102,11 @@ class ControladorBarraLateral:
         Returns:
             Optional[pd.DataFrame]: DataFrame con los datos cargados o None
         """
-        cfg_archivo = self.config_lv["seccion_archivo"]["file_uploader"]
+        # cfg_archivo = self.config_lv["seccion_archivo"]["file_uploader"]
+        cfg_archivo_vtas = self.config_lv["seccion_archivo"]["file_uploader_vtas"]
+        cfg_archivo_precios = self.config_lv["seccion_archivo"]["file_uploader_precios"]
 
-        gestor_archivos = FileUploaderManager(
+        """gestor_archivos = FileUploaderManager(
             titulo=cfg_archivo["titulo"],
             clave=cfg_archivo["clave"],
             uploader_msg=cfg_archivo["uploader_msg"],
@@ -113,11 +115,43 @@ class ControladorBarraLateral:
             tipo_archivos=cfg_archivo["tipo_archivos"],
             icon=cfg_archivo["icon"],
             usar_sidebar=True,
+        )"""
+
+        gestor_precios = FileUploaderManager(
+            titulo=cfg_archivo_precios["titulo"],
+            clave=cfg_archivo_precios["clave"],
+            uploader_msg=cfg_archivo_precios["uploader_msg"],
+            limit_msg=cfg_archivo_precios["limit_msg"],
+            button_msg=cfg_archivo_precios["button_msg"],
+            tipo_archivos=cfg_archivo_precios["tipo_archivos"],
+            icon=cfg_archivo_precios["icon"],
+            usar_sidebar=True,
         )
 
-        if gestor_archivos.uploaded_files():
-            return gestor_archivos.leer_archivos()[0]
-        return None
+        gestor_vtas = FileUploaderManager(
+            titulo=cfg_archivo_vtas["titulo"],
+            clave=cfg_archivo_vtas["clave"],
+            uploader_msg=cfg_archivo_vtas["uploader_msg"],
+            limit_msg=cfg_archivo_vtas["limit_msg"],
+            button_msg=cfg_archivo_vtas["button_msg"],
+            tipo_archivos=cfg_archivo_vtas["tipo_archivos"],
+            icon=cfg_archivo_vtas["icon"],
+            usar_sidebar=True,
+        )
+
+        # df_archivos = gestor_archivos.leer_archivos()
+        df_precios = gestor_precios.leer_archivos()
+        df_ventas = gestor_vtas.leer_archivos()
+
+        if df_precios and df_ventas:
+            return df_precios[0], df_ventas[0]
+        else:
+            return None, None
+
+        # if df_archivos and df_precios and df_ventas:
+        #    return df_archivos[0], df_precios[0], df_ventas[0]
+        # else:
+        #    return None, None, None
 
     def controlador_barra_lateral(self) -> Tuple[str, int, Optional[DataFrame]]:
         """Controlador principal de la barra lateral
@@ -131,5 +165,5 @@ class ControladorBarraLateral:
         st.sidebar.title(self.config_lv["encabezado"])
         rango_actual = self._renderizar_seccion_descuentos()
         crecimiento_actual = self._renderizar_seccion_crecimiento()
-        df = self._renderizar_cargador_archivos()
-        return rango_actual, crecimiento_actual, df
+        df_vtas, df_precios = self._renderizar_cargador_archivos()
+        return rango_actual, crecimiento_actual, df_vtas, df_precios

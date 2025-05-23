@@ -1,5 +1,24 @@
 
 # Configuraciones de usuario. 
+
+cnf_concep_herr:
+  concepto:
+    - "Canasta del ahorro"
+    - "Irresistibles"
+    - "Mega ofertas"
+    - "Concepto 4"
+    - "Concepto 5"
+    - "Concepto 6"
+    - "Concepto 7"
+  herramienta:
+    - "Reposicion: presentaciones pequeñas. Viernes a lunes"
+    - "Alacena tamaños grandes, va sabado a viernes"
+    - "Alacena: presentaciones grandes, descuentos profundos"
+    - "Heramienta 4"
+    - "Herramienta 5"
+    - "Herramienta 6"
+    - "Herramienta 7"
+
 df_insumo:
   dict_cols : {
     "Mes": "Mes",
@@ -18,6 +37,8 @@ df_insumo:
     - "concat_plu_producto"
     - "plu"
     - "producto"
+    - "Marca"
+    - "Sub"
     - "Venta $$ Promedio Mes"
     - "Promedio Mes Und"
     - "Precio de venta"
@@ -56,6 +77,24 @@ lateral_var:
       etiqueta : "Confirmar % crecimiento"
 
   seccion_archivo:
+    file_uploader_precios:
+      clave: "archivo_excel_prec"
+      titulo: "Cargar archivo precios"
+      uploader_msg: "📤 Adjuntar archivo precios"
+      limit_msg: "Tamaño máximo 200MB"
+      button_msg: "🗂️ Examinar"
+      tipo_archivos: ["csv", "xlsx"]
+      icon: "MdUploadFile"
+
+    file_uploader_vtas:
+      clave: "archivo_excel_vtas"
+      titulo: "Cargar archivo ventas"
+      uploader_msg: "📤 Adjuntar archivo vtas"
+      limit_msg: "Tamaño máximo 200MB"
+      button_msg: "🗂️ Examinar"
+      tipo_archivos: ["csv", "xlsx"]
+      icon: "MdUploadFile"
+
     file_uploader:
       clave: "archivo_excel"
       titulo: "Cargar archivo"
@@ -65,76 +104,69 @@ lateral_var:
       tipo_archivos: ["csv", "xlsx"]
       icon: "MdUploadFile"
 
+cnf_columnas_data:
+  eliminar_col: "Eliminar"
+  concat_col: "concat_plu_producto"
 
-
-
-
-
-
-config_session_state:
-  claves_a_conservar:
+cnf_session_keys:
+  editor_df_key: "editor_df_final"
+  inicializacion:
+    list_materiales:
+      valor_inicial: []
+    registro_confirmado: 
+      valor_inicial: false
+    confirmar_edicion_pendiente: 
+      valor_inicial: false
+  
+  claves_preservar:
     - "selector_rango_dcto"
     - "df_insumo"
+    - "df_final"
     - "text_input_crecimiento_valido"
-    - "btn_confirmar_rango_estado"
     - "portje_cremto_act"
-    - "btn_confirmar_%_crecimiento_widget"
-    - "btn_confirmar_%_crecimiento_estado"
-    - "archivo_excel"
-    - "btn_confirmar_rango_widget"
     - "rango_act"
-    - "text_input_crecimiento"
     - "list_materiales"
+    - "registro_confirmado"
+    - "confirmar_edicion_pendiente"
+    - "archivo_excel"
 
+  lista_materiales: "list_materiales"
+  dataframe_final: "df_final"
+  registro_confirmado: "registro_confirmado"
+  edicion_confirmada: "edicion_confirmada"
 
-
-url_app_apscritp: https://script.google.com/macros/s/AKfycbxrLMi97hhKLNp6aL0a6fumxo6TvZvXX58bX1WaSSesF5aoKcfdMOUnCSHa7wGE62ApMQ/exec
-
-textos:
-  titulo_principal: "Interfaz Interactiva con Múltiples Selecciones"
-  subtitulo: "Selección de Materiales y Porcentajes"
-  agregar_fila: "Agregar nueva fila"
-  seleccionar_materiales: "Seleccionar Materiales"
-  seleccionar_meses: "Seleccionar Meses"
-  construir_tabla: "Construir tabla"
-  seleccion_material_placeholder: "Selecciona un material:"
-  seleccion_mes_placeholder: "Selecciona un mes:"
-  mensaje_exito: "¡Perfecto, los materiales suman el "
-  mensaje_advertencia: "Ajusta los valores. Los materiales aún no suman el "
-  mensaje_error: "Ajusta los valores. Los materiales no pueden sumar más del " 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-mes_actual: Febrero
-concepto: 
-  Concurso regional de logros:
-    primer_lugar: Concurso regional de logros {mes_actual} cumple piso 60 logros 1er lugar.
-    segundo_lugar: Concurso regional de logros {mes_actual} cumple piso 60 logros 2do lugar.
-    resto: Concurso regional de logros {mes_actual} cumple piso 60 logros.
-    primer_lugar_especial: Concurso regional de logros {mes_actual} frente comercial
-    segundo_lugar_especial: Concurso regional de logros {mes_actual} frente comercial
-  Gestión inventario. :
-    resto : Gestión inventario {mes_actual} 
-  IGPT:
-    resto : IGPT {mes_actual} 
+cnf_botones:
+  agregar_material:
+    clave: "Agregar_mat"
+    etiqueta: "Agregar material"
+    usar_sidebar: true
+    auto_render: true
   
+  confirmar_registro:
+    clave: "confirmar_registro"
+    etiqueta: "✅ Confirmar registro"
+    usar_sidebar: false
+    auto_render: false
+
+  confirmar_edicion:
+    clave: "confirmar_edicion"
+    etiqueta: "💾 Confirmar edición"
+    usar_sidebar: false
+    auto_render: false
+
+  eliminar_filas:
+    clave: "eliminar_filas"
+    etiqueta: "🗑️ Eliminar filas seleccionadas"
+    usar_sidebar: false
+    auto_render: false
+
+
+cnf_mensajes:
+  registro_exitoso: "✅ Registro confirmado. Ahora puedes editar los datos."
+  edicion_exitosa: "✅ Edición confirmada."
+  eliminacion_exitosa: "✅ Filas eliminadas correctamente."
+  sin_insumos: "⚠️ Aún no se ha cargado un archivo de insumos."
+  editar_titulo: "✏️ Editar datos registrados"
+
+
+

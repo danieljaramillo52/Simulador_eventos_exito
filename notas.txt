@@ -1,3 +1,0 @@
-Componente para la personalización de una barra para subir archivos. 
-
-pip install st_file_uploader

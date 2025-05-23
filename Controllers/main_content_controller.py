@@ -1,6 +1,14 @@
 import streamlit as st
 from services.data_service import GestorDatos
-from ui_components.ui_components import ButtonTracker, MultiVisibilityController, SelectBoxManager, SelectorFechasEvento, TextInputManager, add_key_ss_st, set_key_ss_st
+from ui_components.ui_components import (
+    ButtonTracker,
+    MultiVisibilityController,
+    SelectBoxManager,
+    SelectorFechasEvento,
+    TextInputManager,
+    add_key_ss_st,
+    set_key_ss_st,
+)
 from ui_components.utils import formatear_fecha
 
 
@@ -36,20 +44,22 @@ class GestorContenidoPrincipal:
                 "text_input_concepto",
             ]
         )
+        dict_herra_conp = self.gestor_datos.config["cnf_concep_herr"]
 
         if visib_sec_her_concep.esta_visible():
-            st.write("## Herramienta y Concepto")
-            input_herramienta = TextInputManager(
-                clave="text_input_herramienta",
-                etiqueta="Ingrese el nombre de la herramienta",
-                tipo=str,
+            st.write("## Concepto y Herramienta")
+
+            input_concepto = SelectBoxManager(
+                clave="text_input_concepto",
+                etiqueta="Ingrese el nombre del concepto",
+                opciones=dict_herra_conp["concepto"],
                 usar_sidebar=False,
             )
 
-            input_concepto = TextInputManager(
-                clave="text_input_concepto",
-                etiqueta="Ingrese el nombre del concepto",
-                tipo=str,
+            input_herramienta = SelectBoxManager(
+                clave="text_input_herramienta",
+                etiqueta="Ingrese el nombre de la herramienta",
+                opciones=dict_herra_conp["herramienta"],
                 usar_sidebar=False,
             )
 
@@ -118,7 +128,7 @@ class GestorContenidoPrincipal:
                 clave="selector_material",
                 etiqueta="Seleccione un material",
                 opciones=list(
-                    self.gestor_datos.df_procesado["concat_plu_producto"].unique()
+                    self.gestor_datos.df_prec_vtas_procesado["concat_plu_producto"].unique()
                 ),
                 usar_sidebar=False,
             )

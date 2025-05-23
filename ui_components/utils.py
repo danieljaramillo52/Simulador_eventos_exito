@@ -3,12 +3,13 @@ import os
 import numpy as np
 import streamlit as st
 from loguru import logger
-from typing import List
+from typing import List, Union, Literal
 import yaml
 import requests
 from io import BytesIO
 from datetime import date
 import re
+from PIL import Image
 
 
 def procesar_configuracion(nom_archivo_configuracion: str) -> dict:
@@ -212,21 +213,44 @@ def load_css(file_name):
     except Exception as e:
         st.error(f"Error al cargar el CSS: {e}")
 
+import base64
+from io import BytesIO
+
+def image_to_base64(image):
+    """Convierte una imagen PIL a base64 para HTML inline"""
+    buffered = BytesIO()
+    image.save(buffered, format="PNG")
+    return base64.b64encode(buffered.getvalue()).decode()
 
 def setup_ui():
-    """
-    Configura la interfaz de usuario, incluyendo el logo, el título, el subtítulo y los estilos CSS.
-    """
+    load_css("static/styles.css")  # Si tienes estilos base
 
-    # Cargar los estilos CSS
-    load_css("static/styles.css")
+    # Cargar imagen como base64 para incrustarla en HTML
+    image_path = "Img/EXITO.png"
+    image = Image.open(image_path).resize((100, 100))
+    img_base64 = image_to_base64(image)
 
-    st.write("")
+    # Usar una tabla HTML para alinear horizontalmente texto e imagen
     st.markdown(
-        "<h1 style='text-align: center; color: #4a90e2; text-transform: none;'>"
-        "Cálculo descuentos grandes cadenas</h1>",
-        unsafe_allow_html=True,
+        f"""
+        <div style="background-color: #e8f8f5; padding: 10px 20px; border-radius: 10px;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                    <td style="text-align: left;">
+                        <h1 style="margin: 0; font-size: 2.5em; color: ##9bb80b;">
+                            Cálculo descuentos éxito
+                        </h1>
+                    </td>
+                    <td style="text-align: right; vertical-align: middle;">
+                        <img src="data:image/png;base64,{img_base64}" alt="Logo Éxito" width="100">
+                    </td>
+                </tr>
+            </table>
+        </div>
+        """,
+        unsafe_allow_html=True
     )
+
 
 
 # wrapper: Decorador (st.cache data.)
@@ -389,6 +413,17 @@ def left_merge_on_columns(
     return merged_df
 
 
+def actualizar_dias(df, dict_cols):
+    """Actualiza los dias si las fechas fueron modificadas"""
+    FECHA_FIN = "fecha_fin"
+    FECHA_INICIO = "fecha_inicio"
+
+    df[dict_cols["Dias de la actividad"]] = abs(
+        pd.to_datetime(df[FECHA_FIN]) - pd.to_datetime(df[FECHA_INICIO])
+    ).dt.days
+    return df
+
+
 def calcular_unidades(
     df,
     dict_cols,
@@ -476,11 +511,11 @@ def preparar_df_materiales(df):
     Returns:
         pd.DataFrame: DataFrame con columna 'rango' normalizada.
     """
-    df["rango"] = df["rango"].astype(int) / 100
+    df["rango%"] = df["rango"].astype(int) / 100
     return df
 
 
-def calcular_promedios(df: pd.DataFrame, cols: list[str]):
+def calcular_vtas_totales(df: pd.DataFrame, cols: list[str]):
     """Calcula un promedio simple sobre varias columnas de un dataframe
 
     Args:
@@ -490,8 +525,8 @@ def calcular_promedios(df: pd.DataFrame, cols: list[str]):
     Return:
         serie_prom: type (pd.Series). Serie con los promedios calculados."""
 
-    promedios = df[cols].mean().round(2)
-    return promedios
+    sumas_totales = df[cols].sum().round(2)
+    return sumas_totales
 
 
 def calcular_descuento(df):
@@ -505,7 +540,7 @@ def calcular_descuento(df):
     Returns:
         pd.Series: Columna con valores del costo del descuento.
     """
-    return df["Venta de la actividad"] * df["rango"]
+    return df["Venta de la actividad"] * df["rango%"]
 
 
 def procesar_insumo(df_insumo, porcentaje_crecimiento, dict_cols):
@@ -521,6 +556,7 @@ def procesar_insumo(df_insumo, porcentaje_crecimiento, dict_cols):
         pd.DataFrame: DataFrame procesado con todas las columnas calculadas.
     """
     df = df_insumo.copy()
+    df = actualizar_dias(df, dict_cols)
     df = calcular_unidades(df, dict_cols)
     df = calcular_totales(df, porcentaje_crecimiento)
     df = calcular_venta(df, dict_cols)
@@ -550,7 +586,27 @@ def aplanar_diccionario(diccionario: dict, clave_aplanar: str = "Fecha") -> dict
         **diccionario.get(clave_aplanar, {}),
     }
 
+def renombrar_columnas_con_diccionario(
+        df: pd.DataFrame, cols_to_rename: dict
+    ) -> pd.DataFrame:
+        """Funcion que toma un diccionario con keys ( nombres actuales ) y values (nuevos nombres) para remplazar nombres de columnas en un dataframe.
+        Args:
+            base: dataframe al cual se le harán los remplazos
+            cols_to_rename: diccionario con nombres antiguos y nuevos
+        Result:
+            base_renombrada: Base con las columnas renombradas.
+        """
+        base_renombrada = None
 
+        try:
+            base_renombrada = df.rename(columns=cols_to_rename, inplace=False)
+            #logger.success("Proceso de renombrar columnas satisfactorio: ")
+        except Exception:
+            logger.critical("Proceso de renombrar columnas fallido.")
+            raise Exception
+
+        return base_renombrada
+    
 def reemplazar_columna_en_funcion_de_otra(
     df: pd.DataFrame,
     nom_columna_a_reemplazar: str,
@@ -626,6 +682,124 @@ def Seleccionar_columnas_pd(
         logger.critical(f"Error inesperado al filtrar columnas: {str(e)}")
 
 
+def group_by_and_operate(
+    df: pd.DataFrame,
+    group_col: Union[str, List[str]],
+    operation_cols: Union[str, List[str]],
+    operation: Literal["sum", "mean", "count"] = "sum"
+) -> Union[pd.DataFrame, None]:
+    """
+    Agrupa un DataFrame por una o varias columnas y aplica una operación sobre otras columnas.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame de entrada que contiene los datos a procesar.
+    group_col : str or list of str
+        Columna o lista de columnas por las que se agrupará el DataFrame.
+    operation_cols : str or list of str
+        Columna o columnas sobre las que se aplicará la operación (sum, mean, count).
+    operation : {'sum', 'mean', 'count'}, default='sum'
+        Operación a realizar sobre las columnas indicadas.
+
+    Returns
+    -------
+    pd.DataFrame or None
+        DataFrame resultante con los valores agrupados y operados, o `None` si ocurre un error.
+    """
+    try:
+        group_keys = [group_col] if isinstance(group_col, str) else group_col
+        target_cols = [operation_cols] if isinstance(operation_cols, str) else operation_cols
+
+        if operation == "sum":
+            result_df = df.groupby(group_keys)[target_cols].sum().reset_index()
+        elif operation == "mean":
+            result_df = df.groupby(group_keys)[target_cols].mean().reset_index()
+        elif operation == "count":
+            result_df = df.groupby(group_keys)[target_cols].count().reset_index()
+        else:
+            raise ValueError(f"Operación no soportada: '{operation}'")
+
+        logger.info(f"Agrupación y operación '{operation}' realizadas con éxito.")
+        return result_df
+
+    except Exception as e:
+        logger.critical(f"Error al realizar la operación '{operation}': {e}")
+        return None
+
+def filtrar_por_valores(
+    df: pd.DataFrame,
+    columna: str,
+    valores: list[str | int],
+    incluir: bool = True
+) -> pd.DataFrame | None:
+    """
+    Filtra un DataFrame incluyendo o excluyendo filas según los valores en una columna.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame a filtrar.
+    columna : str
+        Nombre de la columna sobre la cual aplicar el filtro.
+    valores : list of str or int
+        Lista de valores a incluir o excluir.
+    incluir : bool, default=True
+        Si True, incluye las filas con los valores indicados. Si False, las excluye.
+
+    Returns
+    -------
+    pd.DataFrame or None
+        DataFrame filtrado o None si ocurre un error.
+    """
+    try:
+        if isinstance(valores, (str, int)):
+            valores = [valores]
+
+        if incluir:
+            df_filtrado = df[df[columna].isin(valores)]
+        else:
+            df_filtrado = df[~df[columna].isin(valores)]
+
+        return df_filtrado
+
+    except Exception as e:
+        logger.critical(
+            f"Error al filtrar por valores en la columna '{columna}': {e}"
+        )
+        return None
+
+def Cambiar_tipo_dato_multiples_columnas_pd(
+        base: pd.DataFrame, list_columns: list, type_data: type
+    ) -> pd.DataFrame:
+        """
+        Función que toma un DataFrame, una lista de sus columnas para hacer un cambio en el tipo de dato de las mismas.
+
+        Args:
+            base (pd.DataFrame): DataFrame que es la base del cambio.
+            list_columns (list): Columnas a modificar su tipo de dato.
+            type_data (type): Tipo de dato al que se cambiarán las columnas (ejemplo: str, int, float).
+
+        Returns:
+            pd.DataFrame: Copia del DataFrame con los cambios.
+        """
+        try:
+            # Verificar que el DataFrame tenga las columnas especificadas
+            for columna in list_columns:
+                if columna not in base.columns:
+                    raise KeyError(f"La columna '{columna}' no existe en el DataFrame.")
+
+            # Cambiar el tipo de dato de las columnas
+            base_copy = (
+                base.copy()
+            )  # Crear una copia para evitar problemas de SettingWithCopyWarning
+            base_copy[list_columns] = base_copy[list_columns].astype(type_data)
+
+            return base_copy
+
+        except Exception as e:
+            logger.critical(f"Error en Cambiar_tipo_dato_multiples_columnas: {e}")
+
 def formatear_fecha(fecha_dict):
     if not isinstance(fecha_dict, dict):
         return {}
@@ -640,6 +814,5 @@ def formatear_fecha(fecha_dict):
             if isinstance(fecha_dict.get("fecha_fin"), date)
             else ""
         ),
-        "Dias de la actividad": fecha_dict.get("dias", ""),
         "mes": fecha_dict.get("mes", ""),
     }

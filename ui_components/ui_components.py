@@ -49,6 +49,17 @@ def set_key_ss_st(clave: str, valor: Any) -> None:
     st.session_state[clave] = valor
 
 
+def set_multiple_keys(valores: dict):
+    """
+    Asigna múltiples valores al session_state usando set_key_ss_st internamente.
+
+    Args:
+        valores (dict): Diccionario de clave: valor a asignar.
+    """
+    for clave, valor in valores.items():
+        set_key_ss_st(clave, valor)
+
+
 def clean_key_ss_st(keys: tuple | list) -> None:
     """
     Elimina de forma segura múltiples claves del estado de sesión de Streamlit.
@@ -271,6 +282,20 @@ class MultiVisibilityController:
         return st.session_state.get(vis_key, False)
 
 
+@st.cache_data
+def leer_archivo_cacheado(
+    nombre: str, bytes_archivo: bytes, tipo: str, usecols=None
+) -> pd.DataFrame:
+    """Lee un archivo como DataFrame con cache de Streamlit."""
+    buffer = BytesIO(bytes_archivo)
+    if tipo == "csv":
+        return pd.read_csv(buffer)
+    elif tipo == "xlsx":
+        return pd.read_excel(buffer, dtype=str, engine="openpyxl", usecols=usecols)
+    else:
+        return pd.DataFrame()
+
+
 class FileUploaderManager:
     """
     Maneja un cargador de archivos personalizado usando st_file_uploader,
@@ -295,6 +320,7 @@ class FileUploaderManager:
         self.titulo = titulo
         self.use_cols = use_cols
 
+        # NO eliminar: componente personalizado de uploader
         self.uploader = stf.create_custom_uploader(
             uploader_msg=uploader_msg,
             limit_msg=limit_msg,
@@ -305,16 +331,19 @@ class FileUploaderManager:
         self.archivos = self._mostrar_uploader()
 
     def _mostrar_uploader(self) -> List[st.runtime.uploaded_file_manager.UploadedFile]:
-        if self.usar_sidebar:
-            with st.sidebar:
-                st.markdown(f"### {self.titulo}")
-                archivos = self.uploader.file_uploader(
-                    label="",
-                    type=self.tipo_archivos,
-                    accept_multiple_files=True,
-                    key=self.clave,
-                )
-        else:
+        """
+        Renderiza el componente de carga de archivos y muestra un mensaje de éxito solo una vez por sesión.
+
+        Este método utiliza `st.file_uploader` personalizado para permitir la carga de múltiples archivos,
+        ya sea en la barra lateral o en el cuerpo principal de la aplicación. Adicionalmente, emplea una
+        bandera en `st.session_state` para mostrar el mensaje de confirmación ("✅ Archivo cargado: ...")
+        únicamente la primera vez que se cargan archivos, evitando duplicación del mensaje en ejecuciones
+        posteriores del script (reruns).
+
+        Returns:
+            List[UploadedFile]: Lista de archivos cargados por el usuario, o una lista vacía si no se ha cargado ninguno.
+        """
+        with st.sidebar if self.usar_sidebar else st.container():
             st.markdown(f"### {self.titulo}")
             archivos = self.uploader.file_uploader(
                 label="",
@@ -323,11 +352,16 @@ class FileUploaderManager:
                 key=self.clave,
             )
 
-        if archivos:
+        # Mostrar mensaje una sola vez
+        if archivos and not st.session_state.get(
+            f"{self.clave}_mensaje_mostrado", False
+        ):
             for archivo in archivos:
                 st.success(
                     f"✅ Archivo cargado: {getattr(archivo, 'name', 'desconocido')}"
                 )
+            st.session_state[f"{self.clave}_mensaje_mostrado"] = True
+
         return archivos or []
 
     def get_archivos(self) -> List[st.runtime.uploaded_file_manager.UploadedFile]:
@@ -338,7 +372,7 @@ class FileUploaderManager:
 
     def leer_archivos(self) -> List[pd.DataFrame]:
         """
-        Lee los archivos cargados como DataFrames si son .csv o .xlsx.
+        Lee los archivos cargados como DataFrames si son .csv o .xlsx (con cache).
 
         Returns:
             List[pd.DataFrame]
@@ -350,21 +384,17 @@ class FileUploaderManager:
                 if nombre is None:
                     raise ValueError("Archivo sin nombre válido")
 
-                if isinstance(archivo, bytes):
-                    buffer = BytesIO(archivo)
-                else:
-                    buffer = BytesIO(archivo.read())
+                tipo = nombre.split(".")[-1].lower()
+                bytes_archivo = archivo.read()
 
-                if nombre.endswith(".csv"):
-                    df = pd.read_csv(buffer)
-                elif nombre.endswith(".xlsx"):
-                    df = pd.read_excel(
-                        buffer, dtype=str, engine="openpyxl", usecols=self.use_cols
-                    )
-                else:
-                    continue
-
+                df = leer_archivo_cacheado(
+                    nombre=nombre,
+                    bytes_archivo=bytes_archivo,
+                    tipo=tipo,
+                    usecols=self.use_cols,
+                )
                 dataframes.append(df)
+
             except Exception as e:
                 nombre = getattr(archivo, "name", "Archivo desconocido")
                 st.error(f"❌ Error leyendo {nombre}: {e}")
@@ -670,7 +700,6 @@ class SelectorFechasEvento:
         return {
             "fecha_inicio": self.fecha_inicio,
             "fecha_fin": self.fecha_fin,
-            "dias": self.dias,
             "mes": self.mes,
         }
 
@@ -680,5 +709,4 @@ class SelectorFechasEvento:
         """
         st.session_state["fecha_inicio_evento"] = self.fecha_inicio
         st.session_state["fecha_fin_evento"] = self.fecha_fin
-        st.session_state["dias_evento"] = self.dias
         st.session_state["mes_evento"] = self.mes
