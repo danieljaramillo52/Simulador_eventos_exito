@@ -1,7 +1,7 @@
 import pandas as pd
 from pandas import DataFrame
 from typing import Optional
-from config_loader import ConfigLoader
+from Controllers.config_loader import ConfigLoader
 from ui_components.ui_components import add_key_ss_st
 import ui_components.utils as utils
 

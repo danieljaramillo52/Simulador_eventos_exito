@@ -1,22 +1,4 @@
 
-# Configuraciones de usuario. 
-
-cnf_concep_herr:
-  concepto:
-    - "Canasta del ahorro"
-    - "Irresistibles"
-    - "Mega ofertas"
-    - "Concepto 4"
-    - "Concepto 5"
-    - "Concepto 6"
-    - "Concepto 7"
-  herramienta:
-    - "Reposicion: presentaciones pequeñas. Viernes a lunes"
-    - "Alacena tamaños grandes, va sabado a viernes"
-    - "Alacena: presentaciones grandes, descuentos profundos"
-    - "Listas complementarias"
-    - "Mi descuento"
-    - "Descuentos de aniversario"
 
 df_insumo:
   dict_cols : {

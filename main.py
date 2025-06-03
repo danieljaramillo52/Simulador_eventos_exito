@@ -11,7 +11,7 @@ import ui_components.utils as utils
 from Controllers.sidebar_controller import ControladorBarraLateral
 from Controllers.main_content_controller import GestorContenidoPrincipal
 from services.data_service import GestorDatos
-from config_loader import ConfigLoader
+from Controllers.config_loader import ConfigLoader
 
 
 class Aplicacion:
@@ -23,6 +23,7 @@ class Aplicacion:
         incluyendo la carga de configuración, la barra lateral, los datos y el contenido principal.
         """
         self.cargador_config = ConfigLoader(utils=utils)
+
         self.barra_lateral = ControladorBarraLateral(
             config_lv=self.cargador_config.cnf_lateral_var
         )
@@ -42,15 +43,17 @@ class Aplicacion:
         self._inicializar_session()
 
         # Procesar selección de barra lateral
-        rango_act, portje_cremto_act, df_precios, df_vtas = self._procesar_barra_lateral()
+        rango_act, portje_cremto_act, df_precios, df_vtas = (
+            self._procesar_barra_lateral()
+        )
 
         # Validar rango y cargar archivo
         self.gestor_datos.validar_rango(rango_act)
-        
+
         # Bnadera para archivos cargados
         add_key_ss_st(clave="archivos_cargados", valor_inicial=False)
         self.gestor_datos.procesar_dfs_insumos(df_precios, df_vtas)
-        
+
         df_procesado_prec_vtas = self.gestor_datos.df_prec_vtas_procesado
         set_key_ss_st(clave="archivos_cargados", valor=True)
 
@@ -70,7 +73,7 @@ class Aplicacion:
             self._mostrar_promedios(df_procesado_final)
 
             utils.crear_boton_exportar(df=df_procesado_final)
-            
+
         # Si no hay insumos cargados, mostrar advertencia
         elif st.session_state["archivos_cargados"] == False:
             st.warning(self.cargador_config.cnf_mensajes["sin_insumos"])
