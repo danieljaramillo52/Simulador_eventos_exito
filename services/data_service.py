@@ -99,16 +99,22 @@ class GestorDatos:
             operation_cols=["Ventas_COP", "Ventas_Un"],
             operation="mean",
         )
+        
+        df_fil_final_group = utils.Cambiar_tipo_dato_multiples_columnas_pd(
+            base=df_fil_final_group,
+            list_columns=["Ventas_COP", "Ventas_Un"],
+            type_data=int,
+        )
 
         df_fil_final_group = utils.left_merge_on_columns(
             df1=df_fil_final_group,
             df2=self.df_prec_copy[
-                ["PLU", "SUBLINEA", "P. LISTA CON IVA", "P. SUGERIDO"]
+                ["PLU", "SUBLINEA", "P. LISTA", "P. SUGERIDO"]
             ],
             key_columns=["PLU"],
         )
-        df_fil_final_group[["P. LISTA CON IVA", "P. SUGERIDO"]] = df_fil_final_group[
-            ["P. LISTA CON IVA", "P. SUGERIDO"]
+        df_fil_final_group[["P. LISTA", "P. SUGERIDO"]] = df_fil_final_group[
+            ["P. LISTA", "P. SUGERIDO"]
         ].fillna(0)
 
         df_fil_final_group_re = utils.renombrar_columnas_con_diccionario(

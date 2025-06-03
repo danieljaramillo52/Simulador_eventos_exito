@@ -213,14 +213,17 @@ def load_css(file_name):
     except Exception as e:
         st.error(f"Error al cargar el CSS: {e}")
 
+
 import base64
 from io import BytesIO
+
 
 def image_to_base64(image):
     """Convierte una imagen PIL a base64 para HTML inline"""
     buffered = BytesIO()
     image.save(buffered, format="PNG")
     return base64.b64encode(buffered.getvalue()).decode()
+
 
 def setup_ui():
     load_css("static/styles.css")  # Si tienes estilos base
@@ -248,9 +251,8 @@ def setup_ui():
             </table>
         </div>
         """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
-
 
 
 # wrapper: Decorador (st.cache data.)
@@ -440,8 +442,8 @@ def calcular_unidades(
         pd.DataFrame: DataFrame con columna 'Unidades' añadida.
     """
     df["Unidades"] = np.ceil(
-        df[dict_cols["Promedio Mes Und"]].astype(float) / DIAS_MES
-    ) * df[dict_cols["Dias de la actividad"]].astype(float)
+        (df[dict_cols["Promedio Mes Und"]].astype(float) / DIAS_MES
+    ) * df[dict_cols["Dias de la actividad"]].astype(float))
     return df
 
 
@@ -458,6 +460,8 @@ def calcular_totales(df, porcentaje_crecimiento):
     """
     df["Crec actividad"] = df["Unidades"] * porcentaje_crecimiento / 100
     df["unidades_totales"] = np.ceil(df["Unidades"] + df["Crec actividad"])
+    
+    df["Crec actividad"] = df["Crec actividad"].astype(int)
     return df
 
 
@@ -475,6 +479,9 @@ def calcular_venta(df, dict_cols):
     df["Venta de la actividad"] = df["unidades_totales"] * df[
         dict_cols["Precio de venta"]
     ].astype(float)
+    
+    df["Venta de la actividad"] = df["Venta de la actividad"].astype(int)
+    
     return df
 
 
@@ -525,7 +532,7 @@ def calcular_vtas_totales(df: pd.DataFrame, cols: list[str]):
     Return:
         serie_prom: type (pd.Series). Serie con los promedios calculados."""
 
-    sumas_totales = df[cols].sum().round(2)
+    sumas_totales = df[cols].sum().astype(int)
     return sumas_totales
 
 
@@ -540,8 +547,26 @@ def calcular_descuento(df):
     Returns:
         pd.Series: Columna con valores del costo del descuento.
     """
-    return df["Venta de la actividad"] * df["rango%"]
+    return (df["Venta de la actividad"] * df["rango%"]).round().astype(int)
 
+
+def reemplazar_mes(df):
+    DICT_MESES = {
+        "January": "Enero",
+        "February": "Febrero",
+        "March": "Marzo",
+        "April": "Abril",
+        "May": "Mayo",
+        "June": "Junio",
+        "July": "Julio",
+        "August": "Agosto",
+        "September": "Septiembre",
+        "October": "Octubre",
+        "November": "Noviembre",
+        "December": "Diciembre",
+    }
+    df["mes"] = df["mes"].map(DICT_MESES)
+    return df
 
 def procesar_insumo(df_insumo, porcentaje_crecimiento, dict_cols):
     """
@@ -561,6 +586,7 @@ def procesar_insumo(df_insumo, porcentaje_crecimiento, dict_cols):
     df = calcular_totales(df, porcentaje_crecimiento)
     df = calcular_venta(df, dict_cols)
     df = preparar_df_materiales(df)
+    df = reemplazar_mes(df)
     df["Costo del descuento"] = calcular_descuento(df)
     return df
 
@@ -586,27 +612,29 @@ def aplanar_diccionario(diccionario: dict, clave_aplanar: str = "Fecha") -> dict
         **diccionario.get(clave_aplanar, {}),
     }
 
+
 def renombrar_columnas_con_diccionario(
-        df: pd.DataFrame, cols_to_rename: dict
-    ) -> pd.DataFrame:
-        """Funcion que toma un diccionario con keys ( nombres actuales ) y values (nuevos nombres) para remplazar nombres de columnas en un dataframe.
-        Args:
-            base: dataframe al cual se le harán los remplazos
-            cols_to_rename: diccionario con nombres antiguos y nuevos
-        Result:
-            base_renombrada: Base con las columnas renombradas.
-        """
-        base_renombrada = None
+    df: pd.DataFrame, cols_to_rename: dict
+) -> pd.DataFrame:
+    """Funcion que toma un diccionario con keys ( nombres actuales ) y values (nuevos nombres) para remplazar nombres de columnas en un dataframe.
+    Args:
+        base: dataframe al cual se le harán los remplazos
+        cols_to_rename: diccionario con nombres antiguos y nuevos
+    Result:
+        base_renombrada: Base con las columnas renombradas.
+    """
+    base_renombrada = None
 
-        try:
-            base_renombrada = df.rename(columns=cols_to_rename, inplace=False)
-            #logger.success("Proceso de renombrar columnas satisfactorio: ")
-        except Exception:
-            logger.critical("Proceso de renombrar columnas fallido.")
-            raise Exception
+    try:
+        base_renombrada = df.rename(columns=cols_to_rename, inplace=False)
+        # logger.success("Proceso de renombrar columnas satisfactorio: ")
+    except Exception:
+        logger.critical("Proceso de renombrar columnas fallido.")
+        raise Exception
 
-        return base_renombrada
-    
+    return base_renombrada
+
+
 def reemplazar_columna_en_funcion_de_otra(
     df: pd.DataFrame,
     nom_columna_a_reemplazar: str,
@@ -686,7 +714,7 @@ def group_by_and_operate(
     df: pd.DataFrame,
     group_col: Union[str, List[str]],
     operation_cols: Union[str, List[str]],
-    operation: Literal["sum", "mean", "count"] = "sum"
+    operation: Literal["sum", "mean", "count"] = "sum",
 ) -> Union[pd.DataFrame, None]:
     """
     Agrupa un DataFrame por una o varias columnas y aplica una operación sobre otras columnas.
@@ -709,7 +737,9 @@ def group_by_and_operate(
     """
     try:
         group_keys = [group_col] if isinstance(group_col, str) else group_col
-        target_cols = [operation_cols] if isinstance(operation_cols, str) else operation_cols
+        target_cols = (
+            [operation_cols] if isinstance(operation_cols, str) else operation_cols
+        )
 
         if operation == "sum":
             result_df = df.groupby(group_keys)[target_cols].sum().reset_index()
@@ -727,11 +757,9 @@ def group_by_and_operate(
         logger.critical(f"Error al realizar la operación '{operation}': {e}")
         return None
 
+
 def filtrar_por_valores(
-    df: pd.DataFrame,
-    columna: str,
-    valores: list[str | int],
-    incluir: bool = True
+    df: pd.DataFrame, columna: str, valores: list[str | int], incluir: bool = True
 ) -> pd.DataFrame | None:
     """
     Filtra un DataFrame incluyendo o excluyendo filas según los valores en una columna.
@@ -764,41 +792,41 @@ def filtrar_por_valores(
         return df_filtrado
 
     except Exception as e:
-        logger.critical(
-            f"Error al filtrar por valores en la columna '{columna}': {e}"
-        )
+        logger.critical(f"Error al filtrar por valores en la columna '{columna}': {e}")
         return None
 
+
 def Cambiar_tipo_dato_multiples_columnas_pd(
-        base: pd.DataFrame, list_columns: list, type_data: type
-    ) -> pd.DataFrame:
-        """
-        Función que toma un DataFrame, una lista de sus columnas para hacer un cambio en el tipo de dato de las mismas.
+    base: pd.DataFrame, list_columns: list, type_data: type
+) -> pd.DataFrame:
+    """
+    Función que toma un DataFrame, una lista de sus columnas para hacer un cambio en el tipo de dato de las mismas.
 
-        Args:
-            base (pd.DataFrame): DataFrame que es la base del cambio.
-            list_columns (list): Columnas a modificar su tipo de dato.
-            type_data (type): Tipo de dato al que se cambiarán las columnas (ejemplo: str, int, float).
+    Args:
+        base (pd.DataFrame): DataFrame que es la base del cambio.
+        list_columns (list): Columnas a modificar su tipo de dato.
+        type_data (type): Tipo de dato al que se cambiarán las columnas (ejemplo: str, int, float).
 
-        Returns:
-            pd.DataFrame: Copia del DataFrame con los cambios.
-        """
-        try:
-            # Verificar que el DataFrame tenga las columnas especificadas
-            for columna in list_columns:
-                if columna not in base.columns:
-                    raise KeyError(f"La columna '{columna}' no existe en el DataFrame.")
+    Returns:
+        pd.DataFrame: Copia del DataFrame con los cambios.
+    """
+    try:
+        # Verificar que el DataFrame tenga las columnas especificadas
+        for columna in list_columns:
+            if columna not in base.columns:
+                raise KeyError(f"La columna '{columna}' no existe en el DataFrame.")
 
-            # Cambiar el tipo de dato de las columnas
-            base_copy = (
-                base.copy()
-            )  # Crear una copia para evitar problemas de SettingWithCopyWarning
-            base_copy[list_columns] = base_copy[list_columns].astype(type_data)
+        # Cambiar el tipo de dato de las columnas
+        base_copy = (
+            base.copy()
+        )  # Crear una copia para evitar problemas de SettingWithCopyWarning
+        base_copy[list_columns] = base_copy[list_columns].astype(type_data)
 
-            return base_copy
+        return base_copy
 
-        except Exception as e:
-            logger.critical(f"Error en Cambiar_tipo_dato_multiples_columnas: {e}")
+    except Exception as e:
+        logger.critical(f"Error en Cambiar_tipo_dato_multiples_columnas: {e}")
+
 
 def formatear_fecha(fecha_dict):
     if not isinstance(fecha_dict, dict):

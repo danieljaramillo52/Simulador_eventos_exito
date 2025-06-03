@@ -14,10 +14,9 @@ cnf_concep_herr:
     - "Reposicion: presentaciones pequeñas. Viernes a lunes"
     - "Alacena tamaños grandes, va sabado a viernes"
     - "Alacena: presentaciones grandes, descuentos profundos"
-    - "Heramienta 4"
-    - "Herramienta 5"
-    - "Herramienta 6"
-    - "Herramienta 7"
+    - "Listas complementarias"
+    - "Mi descuento"
+    - "Descuentos de aniversario"
 
 df_insumo:
   dict_cols : {

@@ -69,6 +69,8 @@ class Aplicacion:
             )
             self._mostrar_promedios(df_procesado_final)
 
+            utils.crear_boton_exportar(df=df_procesado_final)
+            
         # Si no hay insumos cargados, mostrar advertencia
         elif st.session_state["archivos_cargados"] == False:
             st.warning(self.cargador_config.cnf_mensajes["sin_insumos"])
