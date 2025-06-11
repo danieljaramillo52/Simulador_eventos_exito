@@ -171,8 +171,8 @@ def concatenar_columnas_pd(
     """
     try:
         # Verificar si dataframe es un DataFrame de pandas
-        if not isinstance(dataframe, pd.DataFrame):
-            raise TypeError("El argumento 'dataframe' debe ser un DataFrame de pandas.")
+        #if not isinstance(dataframe, pd.DataFrame):
+        #    raise TypeError("El argumento 'dataframe' debe ser un DataFrame de pandas.")
 
         # Verificar si las columnas especificadas existen en el DataFrame
         for col in cols_elegidas:
