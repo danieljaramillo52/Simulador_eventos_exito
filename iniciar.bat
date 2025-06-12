@@ -7,8 +7,8 @@ echo ===============================
 : :call venv\Scripts\activate
 
 :: Instalar requerimientos (Comentar si ya están instalados)
-echo Instalando requerimientos...
-pip install -r requirements.txt
+::echo Instalando requerimientos...
+::pip install -r requirements.txt
 echo ===============================
 
 :: Ejecutar el script principal

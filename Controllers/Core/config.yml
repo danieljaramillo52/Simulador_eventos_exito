@@ -1,5 +1,4 @@
 
-
 df_insumo:
   dict_cols : {
     "Mes": "Mes",
