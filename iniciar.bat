@@ -1,20 +1,35 @@
 @echo off
 echo ===============================
-echo Iniciando el proyecto Python...
-echo ===============================
+echo Configurando el proyecto Python...
 
-:: Activar el entorno virtual
-: :call venv\Scripts\activate
+attrib -h -s "__pycache__" /s /d
+attrib -h -s ".vscode" /s /d
+attrib -h -s "static" /s /d
+attrib -h -s "Controllers" /s /d
+attrib -h -s "venv" /s /d
+attrib -h -s "ui_components" /s /d
+attrib -h -s ".gitignore"
+attrib -h -s ".git"
+attrib -h -s "README.md" 
+attrib -h -s "services" /s /d
+attrib -h -s "Img" /s /d
+attrib -h -s "requirements.txt"
+attrib -h -s "main.py"
+attrib -h -s "iniciar.bat"
+:: Acti-ar el entorno virtual
+::call venv\Scripts\activate
 
 :: Instalar requerimientos (Comentar si ya están instalados)
-::echo Instalando requerimientos...
-::pip install -r requirements.txt
+echo Instalando requerimientos...
+pip install -r requirements.txt
 echo ===============================
 
-:: Ejecutar el script principal
-echo Ejecutando el programa...
-Streamlit run main.py
 
+echo Instalacion terminada...
+echo ===============================
 :: Esperar para que no se cierre de inmediato
 echo.
 pause
+
+
+
